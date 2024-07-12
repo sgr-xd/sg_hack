@@ -1,17 +1,35 @@
 // src/App.js
 import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Home from './components/Home';
+import Register from './components/Register';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
 import UploadDocument from './components/UploadDocument';
 import RetrieveDocument from './components/RetrieveDocument';
 import AllDocuments from './components/AllDocuments';
-import './App.css'
+import AdminPanel from './components/AdminPanel';
+import './App.css';
+
 const App = () => {
+    const isAdmin = true; // You will set this based on the logged-in user's role
+
     return (
-        <div className="App">
-            <h1>eVault System</h1>
-            <UploadDocument />
-            <RetrieveDocument />
-            <AllDocuments />
-        </div>
+        <Router>
+            <div className="App">
+                <h1>eVault System</h1>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/dashboard" element={<Dashboard isAdmin={isAdmin} />} />
+                    <Route path="/upload" element={<UploadDocument />} />
+                    <Route path="/retrieve" element={<RetrieveDocument />} />
+                    <Route path="/all-documents" element={<AllDocuments />} />
+                    <Route path="/admin" element={<AdminPanel />} />
+                </Routes>
+            </div>
+        </Router>
     );
 };
 

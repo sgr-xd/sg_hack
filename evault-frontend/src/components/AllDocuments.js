@@ -1,8 +1,9 @@
 // src/components/AllDocuments.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
+import BackButton from './BackButton';
 const AllDocuments = () => {
+    <BackButton/>
     const [records, setRecords] = useState([]);
 
     const fetchRecords = async () => {

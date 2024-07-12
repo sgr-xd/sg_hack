@@ -1,0 +1,17 @@
+.admin-panel {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.admin-panel ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.admin-panel li {
+    background-color: #f9f9f9;
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}

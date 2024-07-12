@@ -1,0 +1,20 @@
+.dashboard {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.navbar {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.navbar a {
+    text-decoration: none;
+    color: #4A90E2;
+    font-weight: bold;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+}
