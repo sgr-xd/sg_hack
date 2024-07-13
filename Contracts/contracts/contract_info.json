@@ -1,5 +1,5 @@
 {
-  "address": "0xc26b5b649F4e37B97C904c499f12DAA3CDebac2c",
+  "address": "0x158C4e3262258c8055Da73394048b8C007A90DB5",
   "abi": [
     {
       "inputs": [],
@@ -282,6 +282,21 @@
       "type": "function",
       "constant": true,
       "signature": "0x34461067"
+    },
+    {
+      "inputs": [],
+      "name": "getRecordCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xca267f28"
     },
     {
       "inputs": [

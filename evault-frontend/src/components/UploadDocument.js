@@ -13,7 +13,7 @@ const UploadDocument = () => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('title', title);
-        const response = await axios.post('http://localhost:5000/upload', formData);
+        const response = await axios.post('http://127.0.0.1:5000/upload', formData);
         alert(`Document uploaded! TX Hash: ${response.data.tx_hash}`);
     };
 

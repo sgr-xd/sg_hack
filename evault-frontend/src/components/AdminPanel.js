@@ -6,7 +6,7 @@ const AdminPanel = () => {
     const navigate = useNavigate();
     useEffect(() => {
         const fetchUsers = async () => {
-            const response = await fetch('http://localhost:5000//admin/users');
+            const response = await fetch('http://127.0.0.1:5000/admin/users');
             const data = await response.json();
             setUsers(data);
         };

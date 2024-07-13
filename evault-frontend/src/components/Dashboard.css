@@ -1,41 +1,62 @@
 .dashboard {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.navbar {
     display: flex;
-    justify-content: center;
-    gap: 20px;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    position: relative;
 }
 
-.navbar a {
+.logout-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    text-align: center;
+    width: 80px;
+    height: 30px;
+}
+
+.logout-button:hover {
+    background-color: #c82333;
+}
+
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 60px; /* Space for logout button */
+}
+
+.card {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 250px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s;
+    color: #000;
     text-decoration: none;
-    color: #4A90E2;
     font-weight: bold;
 }
 
-.navbar a:hover {
-    text-decoration: underline;
-}
 
-.button-container {
-    display: flex;
-    gap: 10px;
-}
 
-.small-button {
-    padding: 5px 10px;
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.delete-button {
-    background-color: red;
-    color: white;
-    border: none;
-}
-
-.delete-button:hover {
-    background-color: darkred;
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    background-color: #4A90E2;
+    color: #fff;
 }

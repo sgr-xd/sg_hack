@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, send_file, session
 from flask_cors import CORS
 from web3 import Web3
 import json
-import datetime
+from datetime import datetime,timezone
 import io
 import requests
 import base64
@@ -71,6 +71,7 @@ def upload_document():
     global user_role
     global user_name
     try:
+        role=user_role
         if 'file' not in request.files:
             return jsonify({'error': 'File is required'}), 400
         if 'title' not in request.form:
@@ -89,7 +90,14 @@ def upload_document():
         ipfs_hash = response.json()['Hash']
 
         tx_hash = contract.functions.createRecord(user_role, ipfs_hash, title).transact({'from': web3.eth.accounts[0]})
-
+        record_id = contract.functions.recordCount().call()  # Get the new record ID
+       
+        # Store record ID in user collection if not Admin
+        if user_role != "Admin":
+            user_collection.update_one(
+                {'username': user_name},
+                {'$push': {'records': record_id}}
+            )
         return jsonify({'tx_hash': tx_hash.hex(), 'ipfs_hash': ipfs_hash}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -178,7 +186,21 @@ def download_document(record_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/get_recordIds', methods=['GET'])
+def get_record_ids():
+    global user_name
+    try:
+        # Fetch user document from the database
+        user = user_collection.find_one({'username': user_name})
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
 
+        # Retrieve the record array
+        record_ids = user.get('record', [])
+        return jsonify({'record_ids': record_ids}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # User Related APIs
 @app.route('/register', methods=['POST'])
@@ -204,7 +226,8 @@ def register():
         'username': username,
         'password': hashed_password,
         'user_type': user_type,
-        'cipher_key': cipher_key
+        'cipher_key': cipher_key,
+        'record': []
     }
 
     user_collection.insert_one(new_user)
@@ -270,10 +293,11 @@ def generate_log():
         log_file_path = 'activity_log.txt'
         with open(log_file_path, 'w') as log_file:
             for entry in log_entries:
-                timestamp = datetime.utcfromtimestamp(entry['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
+                timestamp = datetime.fromtimestamp(entry['timestamp'], tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
                 log_file.write(f"Record ID: {entry['record_id']}, IPFS Hash: {entry['ipfsHash']}, Action: {entry['action']}, User: {entry['user']}, Timestamp: {timestamp}\n")
 
         return send_file(log_file_path, as_attachment=True)
+    
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

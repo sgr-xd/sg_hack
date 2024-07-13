@@ -7,7 +7,7 @@ const RetrieveDocument = () => {
     const [document, setDocument] = useState(null);
 
     const handleRetrieve = async () => {
-        const response = await axios.get(`http://localhost:5000/get_record/${id}`);
+        const response = await axios.get(`http://127.0.0.1:5000/get_record/${id}`);
         setDocument(response.data);
     };
 

@@ -6,7 +6,7 @@ const AllDocuments = () => {
   const [records, setRecords] = useState([]);
 
   const fetchRecords = async () => {
-    const response = await axios.get("http://localhost:5000/get_all_records");
+    const response = await axios.get("http://127.0.0.1:5000/get_all_records");
     setRecords(response.data);
   };
 
