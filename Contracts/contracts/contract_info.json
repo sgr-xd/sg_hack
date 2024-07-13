@@ -1,5 +1,5 @@
 {
-  "address": "0x0B194156eA78d60B3ffe1dC73aaEc22a9b8FDfa7",
+  "address": "0x9B06b133330e73dA8dF5c1f1933eE8Ef11D9Bb6d",
   "abi": [
     {
       "inputs": [],
@@ -15,6 +15,12 @@
           "internalType": "uint256",
           "name": "recordId",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "ipfsHash",
+          "type": "string"
         },
         {
           "indexed": false,
@@ -37,7 +43,7 @@
       ],
       "name": "ActivityLogged",
       "type": "event",
-      "signature": "0x03d7b3bee7b750a2246ea0838ad011e7598733a7d354ba39498853f3dd1b3442"
+      "signature": "0xaadc88fb0f1054f963f31622c00da5bf460894632b729f712472c2026736be4d"
     },
     {
       "anonymous": false,
@@ -108,6 +114,26 @@
         },
         {
           "indexed": false,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "RecordDeleted",
+      "type": "event",
+      "signature": "0x7d14a037f6460104a7e358ca6256314e3b495e7d360a781b444e183be65c18b2"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
           "internalType": "string",
           "name": "ipfsHash",
           "type": "string"
@@ -148,6 +174,11 @@
           "internalType": "uint256",
           "name": "recordId",
           "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "ipfsHash",
+          "type": "string"
         },
         {
           "internalType": "string",
@@ -240,6 +271,11 @@
           "internalType": "address",
           "name": "owner",
           "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "exists",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
@@ -309,8 +345,32 @@
         },
         {
           "internalType": "uint256",
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "deleteRecord",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x3812514f"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "role",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
           "name": "_recordId",
           "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "_ipfsHash",
+          "type": "string"
         },
         {
           "internalType": "string",
@@ -322,7 +382,7 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0xc41cad68"
+      "signature": "0xdcf7402f"
     },
     {
       "inputs": [
@@ -360,6 +420,11 @@
               "internalType": "address",
               "name": "owner",
               "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "exists",
+              "type": "bool"
             }
           ],
           "internalType": "struct DocumentVault.Record",
@@ -403,6 +468,11 @@
               "internalType": "address",
               "name": "owner",
               "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "exists",
+              "type": "bool"
             }
           ],
           "internalType": "struct DocumentVault.Record[]",
@@ -436,6 +506,11 @@
               "internalType": "uint256",
               "name": "recordId",
               "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "ipfsHash",
+              "type": "string"
             },
             {
               "internalType": "string",

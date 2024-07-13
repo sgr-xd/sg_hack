@@ -6,7 +6,7 @@ import axios from 'axios';
 const Dashboard = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [userType, setUserType] = useState('user'); // Default to 'user'
+    const [userType, setUserType] = useState('User'); // Default to 'user'
 
     useEffect(() => {
         // Check if userType is passed from location state
@@ -39,7 +39,7 @@ const Dashboard = () => {
                 <Link to="/upload">Upload Document</Link>
                 <Link to="/retrieve">Retrieve Document</Link>
                 <Link to="/all-documents">All Documents</Link>
-                {userType === 'admin' && <Link to="/admin">Admin Panel</Link>}
+                {userType === 'Admin' && <Link to="/admin">Admin Panel</Link>}
             </nav>
         </div>
     );

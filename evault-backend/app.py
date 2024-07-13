@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_file, session
 from flask_cors import CORS
 from web3 import Web3
 import json
+import datetime
 import io
 import requests
 import base64
@@ -42,9 +43,8 @@ except (ConnectionError, ConfigurationError) as e:
 # Create default admin user if not exists
 try:
     if user_collection.count_documents({'username': 'admin'}) == 0:
-        admin_random_key = base64.urlsafe_b64encode(os.urandom(32))
-        user_cipher = Fernet(admin_random_key)
-        cipher_key = user_cipher.encrypt('admin'.encode())
+                 
+        cipher_key = base64.urlsafe_b64encode(os.urandom(32))
         admin_user = {
             'username': 'admin',
             'password': generate_password_hash('admin'),
@@ -56,8 +56,8 @@ try:
 except Exception as e:
     print(jsonify({'error': str(e)}), 500)
 
-fixed_key = base64.urlsafe_b64encode(os.urandom(32))
-cipher = Fernet(fixed_key)
+
+
 
 # IPFS API URL
 ipfs_api_url = 'http://127.0.0.1:5001/api/v0'
@@ -69,6 +69,7 @@ user_role = None
 @app.route('/upload', methods=['POST'])
 def upload_document():
     global user_role
+    global user_name
     try:
         if 'file' not in request.files:
             return jsonify({'error': 'File is required'}), 400
@@ -77,7 +78,10 @@ def upload_document():
 
         file = request.files['file']
         title = request.form['title']
-
+        user = user_collection.find_one({'username': user_name})
+        cipher_key=user['cipher_key']
+        print(cipher_key)
+        cipher = Fernet(cipher_key)
         encrypted_file = cipher.encrypt(file.read())
         files = {'file': encrypted_file}
         response = requests.post(f'{ipfs_api_url}/add', files=files)
@@ -93,11 +97,13 @@ def upload_document():
 @app.route('/update/<int:record_id>', methods=['POST'])
 def update_document(record_id):
     global user_role
+    global user_name
     try:
         file = request.files['file']
         title = request.form['title']
-
-        encrypted_file = cipher.encrypt(file.read())
+        user = user_collection.find_one({'username': user_name})
+        cipher_key=user['cipher_key']
+        encrypted_file = cipher_key.encrypt(file.read())
         files = {'file': encrypted_file}
         response = requests.post(f'{ipfs_api_url}/add', files=files)
         ipfs_hash = response.json()['Hash']
@@ -173,12 +179,15 @@ def download_document(record_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/delete/<int:record_id>', methods=['DELETE', 'POST'])
+@app.route('/delete/<int:record_id>', methods=['POST'])
 def delete_document(record_id):
     global user_role
     try:
-        tx_hash = contract.functions.deleteRecord(user_role, record_id).transact({'from': web3.eth.accounts[0]})
-        return jsonify({'tx_hash': tx_hash.hex(), 'status': 'Document deleted'}), 200
+        role = user_role
+
+        # Call smart contract function to delete the record
+        tx_hash = contract.functions.deleteRecord(role, record_id).transact({'from': web3.eth.accounts[0], 'gas': 2000000})
+        return jsonify({'tx_hash': tx_hash.hex()}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -191,16 +200,16 @@ def register():
     user_type = data.get('user_type')
 
     if not username or not password or not user_type:
+        print('error'+'Please provide all required fields')
         return jsonify({'error': 'Please provide all required fields'}), 400
 
     if user_collection.find_one({'username': username}):
+        print('error'+'User already exists')
         return jsonify({'error': 'User already exists'}), 400
 
     hashed_password = generate_password_hash(password)
 
-    user_random_key = base64.urlsafe_b64encode(os.urandom(32))
-    user_cipher = Fernet(user_random_key)
-    cipher_key = user_cipher.encrypt(password.encode())
+    cipher_key = base64.urlsafe_b64encode(os.urandom(32))
     
     new_user = {
         'username': username,
@@ -247,6 +256,37 @@ def list_users():
     users = user_collection.find()
     user_list = [{'username': user['username'], 'user_type': user['user_type']} for user in users]
     return jsonify(user_list), 200
+
+@app.route('/generate_log', methods=['GET'])
+def generate_log():
+    global user_role
+    try:
+        role = user_role
+        records = contract.functions.getAllRecords(role).call()
+        log_entries = []
+
+        for record in records:
+            record_id = record[0]
+            activities = contract.functions.getActivities(role, record_id).call()
+            for activity in activities:
+                log_entries.append({
+                    'record_id': record_id,
+                    'ipfsHash': activity[1],
+                    'action': activity[2],
+                    'user': activity[3],
+                    'timestamp': activity[4]
+                })
+        log_entries.sort(key=lambda x: x['timestamp'])
+
+        log_file_path = 'activity_log.txt'
+        with open(log_file_path, 'w') as log_file:
+            for entry in log_entries:
+                timestamp = datetime.utcfromtimestamp(entry['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
+                log_file.write(f"Record ID: {entry['record_id']}, IPFS Hash: {entry['ipfsHash']}, Action: {entry['action']}, User: {entry['user']}, Timestamp: {timestamp}\n")
+
+        return send_file(log_file_path, as_attachment=True)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
