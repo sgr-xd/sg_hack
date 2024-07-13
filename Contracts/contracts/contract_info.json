@@ -1,6 +1,12 @@
 {
-  "address": "0xdE9325Bf8F64b914552f076EfcCC60a3b6122FBE",
+  "address": "0x0B194156eA78d60B3ffe1dC73aaEc22a9b8FDfa7",
   "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor",
+      "signature": "constructor"
+    },
     {
       "anonymous": false,
       "inputs": [
@@ -32,6 +38,32 @@
       "name": "ActivityLogged",
       "type": "event",
       "signature": "0x03d7b3bee7b750a2246ea0838ad011e7598733a7d354ba39498853f3dd1b3442"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "role",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "action",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "result",
+          "type": "bool"
+        }
+      ],
+      "name": "PermissionChecked",
+      "type": "event",
+      "signature": "0xfb979e79ad426753bb5d1bc98c39f88546c8dd8fa36c5ed2e5008e5a8d689f80"
     },
     {
       "anonymous": false,
@@ -139,6 +171,32 @@
       "signature": "0xfcfc1a76"
     },
     {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "name": "permissions",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xa45b7374"
+    },
+    {
       "inputs": [],
       "name": "recordCount",
       "outputs": [
@@ -193,6 +251,11 @@
       "inputs": [
         {
           "internalType": "string",
+          "name": "role",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
           "name": "_ipfsHash",
           "type": "string"
         },
@@ -206,10 +269,15 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0xc090b4df"
+      "signature": "0xfacff5d2"
     },
     {
       "inputs": [
+        {
+          "internalType": "string",
+          "name": "role",
+          "type": "string"
+        },
         {
           "internalType": "uint256",
           "name": "_id",
@@ -230,10 +298,15 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0x3812c6a8"
+      "signature": "0x89953a63"
     },
     {
       "inputs": [
+        {
+          "internalType": "string",
+          "name": "role",
+          "type": "string"
+        },
         {
           "internalType": "uint256",
           "name": "_recordId",
@@ -249,10 +322,15 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0x7f77095b"
+      "signature": "0xc41cad68"
     },
     {
       "inputs": [
+        {
+          "internalType": "string",
+          "name": "role",
+          "type": "string"
+        },
         {
           "internalType": "uint256",
           "name": "_id",
@@ -292,10 +370,16 @@
       "stateMutability": "view",
       "type": "function",
       "constant": true,
-      "signature": "0x03e9e609"
+      "signature": "0xbc60f6a1"
     },
     {
-      "inputs": [],
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "role",
+          "type": "string"
+        }
+      ],
       "name": "getAllRecords",
       "outputs": [
         {
@@ -329,10 +413,15 @@
       "stateMutability": "view",
       "type": "function",
       "constant": true,
-      "signature": "0xa7f9fe72"
+      "signature": "0x78d573a2"
     },
     {
       "inputs": [
+        {
+          "internalType": "string",
+          "name": "role",
+          "type": "string"
+        },
         {
           "internalType": "uint256",
           "name": "_recordId",
@@ -372,7 +461,7 @@
       "stateMutability": "view",
       "type": "function",
       "constant": true,
-      "signature": "0xfca97fdb"
+      "signature": "0xbf8bae7b"
     }
   ]
 }

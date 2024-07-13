@@ -29,8 +29,8 @@ const Register = () => {
             <input type="text" placeholder="Username" onChange={(e) => setUsername(e.target.value)} />
             <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
             <select value={userType} onChange={(e) => setUserType(e.target.value)}>
-                <option value="user">User</option>
-                <option value="lawyer">Lawyer</option>
+                <option value="User">User</option>
+                <option value="Lawyer">Lawyer</option>
             </select>
             <button type="submit">Register</button>
         </form>
