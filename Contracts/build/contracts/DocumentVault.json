@@ -13313,12 +13313,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x49Ab28A4dfE7b3D9f854D7eF84D7709565d7Ad96",
-      "transactionHash": "0x95022141668c3e5170e590bb2e16a64810f94042eb4e3c21c43300dc1f9ad2d1"
+      "address": "0xEcBd61D6d41f9BeddC7BE80755Fde6E74F4E7775",
+      "transactionHash": "0x44bcbaadeffdc8a0064ad4cca06541def9c44c9d820cc7b741481226e5e7c667"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-07-13T11:23:40.260Z",
+  "updatedAt": "2024-07-13T12:29:51.387Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

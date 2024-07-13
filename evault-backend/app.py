@@ -1,7 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from web3 import Web3
 import json
+import io
 import ipfshttpclient
 from cryptography.fernet import Fernet
 import requests
@@ -23,17 +24,8 @@ contract_address = contract_info['address']
 
 contract = web3.eth.contract(address=contract_address, abi=contract_abi)
 
-password = b"SGRxHarish"
-salt = os.urandom(16)
-kdf = PBKDF2HMAC(
-    algorithm=hashes.SHA256(),
-    length=32,
-    salt=salt,
-    iterations=390000,
-)
-key = base64.urlsafe_b64encode(kdf.derive(password))
-print(key)
-cipher_suite = Fernet(key)
+fixed_key = base64.urlsafe_b64encode(os.urandom(32))# 32 bytes
+cipher = Fernet(fixed_key)
 # IPFS API URL
 ipfs_api_url = 'http://127.0.0.1:5001/api/v0'
 
@@ -57,9 +49,14 @@ def upload_document():
         print(f"Received file: {file.filename}")
         print(f"Received title: {title}")
 
-        # Upload file to IPFS
-        files = {'file': file.read()}
-        
+        # # Upload file to IPFS
+        # files = {'file': file.read()}
+        # Encrypt the file
+        encrypted_file = cipher.encrypt(file.read())
+
+        # Upload encrypted file to IPFS
+        files = {'file': encrypted_file}
+   
         response = requests.post(f'{ipfs_api_url}/add', files=files)
         response.raise_for_status()  # Check for HTTP request errors
         ipfs_hash = response.json()['Hash']
@@ -134,6 +131,40 @@ def get_activities(record_id):
         return jsonify(all_activities), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/download/<int:record_id>', methods=['GET'])
+def download_document(record_id):
+    try:
+        # Retrieve the record from the smart contract
+        record = contract.functions.getRecord(record_id).call()
+        ipfs_hash = record[1]  # This is the IPFS hash
+        print("IPFS hash in download API: " + ipfs_hash)
 
+        # Retrieve the encrypted file from IPFS using POST
+        response = requests.post(f'{ipfs_api_url}/cat?arg={ipfs_hash}')
+        
+        # Log the response
+        print(f"IPFS response status: {response.status_code}")
+        print(f"IPFS response content: {response.content}")
+
+        response.raise_for_status()
+        encrypted_file = response.content
+
+        # Decrypt the file
+        decrypted_file = cipher.decrypt(encrypted_file)
+
+        return send_file(io.BytesIO(decrypted_file),
+                         download_name=f'document_{record_id}.pdf',
+                         as_attachment=True,
+                         mimetype='application/pdf')
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+
+
+
+    
 if __name__ == '__main__':
     app.run(debug=True)
