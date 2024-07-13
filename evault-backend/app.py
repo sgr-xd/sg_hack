@@ -66,6 +66,20 @@ def update_document(record_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/delete/<int:record_id>', methods=['POST'])
+def delete_document(record_id):
+    try:
+        if 'role' not in request.form:
+            return jsonify({'error': 'Role is required'}), 400
+
+        role = request.form['role']
+
+        # Call smart contract function to delete the record
+        tx_hash = contract.functions.deleteRecord(role, record_id).transact({'from': web3.eth.accounts[0], 'gas': 2000000})
+        return jsonify({'tx_hash': tx_hash.hex()}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/log_activity/<int:record_id>', methods=['POST'])
 def log_activity(record_id):
     try:
@@ -108,8 +122,6 @@ def get_activities(record_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
-
 @app.route('/generate_log', methods=['GET'])
 def generate_log():
     try:
@@ -138,5 +150,6 @@ def generate_log():
         return send_file(log_file_path, as_attachment=True)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)

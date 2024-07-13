@@ -7,6 +7,7 @@ contract eVault {
         string ipfsHash;
         string title;
         address owner;
+        bool exists;
     }
 
     struct Activity {
@@ -34,6 +35,11 @@ contract eVault {
         address owner
     );
 
+    event RecordDeleted(
+        uint id,
+        address owner
+    );
+
     event ActivityLogged(
         uint recordId,
         string action,
@@ -52,6 +58,7 @@ contract eVault {
     constructor() {
         permissions["Admin"]["create"] = true;
         permissions["Admin"]["update"] = true;
+        permissions["Admin"]["delete"] = true;
         permissions["Admin"]["logActivity"] = true;
         permissions["Admin"]["getRecord"] = true;
         permissions["Admin"]["getAllRecords"] = true;
@@ -59,6 +66,7 @@ contract eVault {
 
         permissions["User"]["create"] = true;
         permissions["User"]["update"] = false;
+        permissions["User"]["delete"] = false;
         permissions["User"]["logActivity"] = true;
         permissions["User"]["getRecord"] = true;
         permissions["User"]["getAllRecords"] = false;
@@ -72,13 +80,13 @@ contract eVault {
 
     function createRecord(string memory role, string memory _ipfsHash, string memory _title) public onlyRole(role, "create") {
         recordCount++;
-        records[recordCount] = Record(recordCount, _ipfsHash, _title, msg.sender);
+        records[recordCount] = Record(recordCount, _ipfsHash, _title, msg.sender, true);
         activities[recordCount].push(Activity(recordCount, "Created", msg.sender, block.timestamp));
         emit RecordCreated(recordCount, _ipfsHash, _title, msg.sender);
     }
 
     function updateRecord(string memory role, uint _id, string memory _ipfsHash, string memory _title) public onlyRole(role, "update") {
-        require(_id <= recordCount, "Record does not exist.");
+        require(_id <= recordCount && records[_id].exists, "Record does not exist.");
         Record storage record = records[_id];
         record.ipfsHash = _ipfsHash;
         record.title = _title;
@@ -86,8 +94,15 @@ contract eVault {
         emit RecordUpdated(_id, _ipfsHash, _title, msg.sender);
     }
 
+    function deleteRecord(string memory role, uint _id) public onlyRole(role, "delete") {
+        require(_id <= recordCount && records[_id].exists, "Record does not exist.");
+        records[_id].exists = false;
+        activities[_id].push(Activity(_id, "Deleted", msg.sender, block.timestamp));
+        emit RecordDeleted(_id, msg.sender);
+    }
+
     function logActivity(string memory role, uint _recordId, string memory _action) public onlyRole(role, "logActivity") {
-        require(_recordId <= recordCount, "Record does not exist.");
+        require(_recordId <= recordCount && records[_recordId].exists, "Record does not exist.");
         activities[_recordId].push(Activity(_recordId, _action, msg.sender, block.timestamp));
         emit ActivityLogged(_recordId, _action, msg.sender, block.timestamp);
     }
@@ -98,14 +113,25 @@ contract eVault {
 
     function getRecord(string memory role, uint _id) public view returns (Record memory) {
         require(checkRole(role, "getRecord"), "Access denied: Incorrect role");
+        require(records[_id].exists, "Record does not exist.");
         return records[_id];
     }
 
     function getAllRecords(string memory role) public view returns (Record[] memory) {
         require(checkRole(role, "getAllRecords"), "Access denied: Incorrect role");
-        Record[] memory allRecords = new Record[](recordCount);
+        uint activeCount = 0;
         for (uint i = 1; i <= recordCount; i++) {
-            allRecords[i - 1] = records[i];
+            if (records[i].exists) {
+                activeCount++;
+            }
+        }
+        Record[] memory allRecords = new Record[](activeCount);
+        uint counter = 0;
+        for (uint i = 1; i <= recordCount; i++) {
+            if (records[i].exists) {
+                allRecords[counter] = records[i];
+                counter++;
+            }
         }
         return allRecords;
     }
