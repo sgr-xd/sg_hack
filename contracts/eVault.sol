@@ -80,20 +80,21 @@ contract eVault {
         _;
     }
 
-    function createRecord(string memory role, string memory _ipfsHash, string memory _title) public onlyRole(role, "create") {
-        recordCount++;
-        records[recordCount] = Record(recordCount, _ipfsHash, _title, msg.sender, true);
-        activities[recordCount].push(Activity(recordCount, _ipfsHash, "Created", msg.sender, block.timestamp));
-        emit RecordCreated(recordCount, _ipfsHash, _title, msg.sender);
-    }
-
-    function updateRecord(string memory role, uint _id, string memory _ipfsHash, string memory _title) public onlyRole(role, "update") {
+function createRecord(string memory role, string memory _ipfsHash, string memory _title) public onlyRole(role, "create") returns (uint) {
+    recordCount++;
+    records[recordCount] = Record(recordCount, _ipfsHash, _title, msg.sender, true);
+    activities[recordCount].push(Activity(recordCount, _ipfsHash, "Created", msg.sender, block.timestamp));
+    emit RecordCreated(recordCount, _ipfsHash, _title, msg.sender);
+    return recordCount; // Return the new record ID
+}
+    function updateRecord(string memory role, uint _id, string memory _ipfsHash, string memory _title) public onlyRole(role, "update") returns (uint) {
         require(_id <= recordCount && records[_id].exists, "Record does not exist.");
         Record storage record = records[_id];
         record.ipfsHash = _ipfsHash;
         record.title = _title;
         activities[_id].push(Activity(_id, _ipfsHash, "Updated", msg.sender, block.timestamp));
         emit RecordUpdated(_id, _ipfsHash, _title, msg.sender);
+        return _id;
     }
 
     function deleteRecord(string memory role, uint _id) public onlyRole(role, "delete") {

@@ -38,9 +38,12 @@ def upload_document():
         response.raise_for_status()
         ipfs_hash = response.json()['Hash']
 
-        # Call smart contract function to store the IPFS hash
         tx_hash = contract.functions.createRecord(role, ipfs_hash, title).transact({'from': web3.eth.accounts[0], 'gas': 2000000})
-        return jsonify({'tx_hash': tx_hash.hex(), 'ipfs_hash': ipfs_hash}), 201
+        receipt = web3.eth.get_transaction_receipt(tx_hash)
+        # Get the returned record ID from the transaction receipt
+        record_id = contract.functions.createRecord(role, ipfs_hash, title).call({'from': web3.eth.accounts[0]})
+
+        return jsonify({'tx_hash': tx_hash.hex(), 'ipfs_hash': ipfs_hash, 'record_id': record_id}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -62,7 +65,7 @@ def update_document(record_id):
 
         # Call smart contract function to update the IPFS hash
         tx_hash = contract.functions.updateRecord(role, record_id, ipfs_hash, title).transact({'from': web3.eth.accounts[0], 'gas': 2000000})
-        return jsonify({'tx_hash': tx_hash.hex(), 'ipfs_hash': ipfs_hash}), 200
+        return jsonify({'tx_hash': tx_hash.hex(), 'ipfs_hash': ipfs_hash, 'record_id': record_id}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
