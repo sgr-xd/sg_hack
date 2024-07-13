@@ -11,24 +11,41 @@ import os
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from pymongo import MongoClient
+from pymongo.errors import ConfigurationError
+from werkzeug.security import generate_password_hash
 app = Flask(__name__)
 CORS(app)
 
 # Connect to the local Ganache blockchain
 web3 = Web3(Web3.HTTPProvider('http://127.0.0.1:7545'))
+
 # Load contract ABI and address from the saved JSON file
 with open('../Contracts/contracts/contract_info.json') as f:
     contract_info = json.load(f)
 contract_abi = contract_info['abi']
 contract_address = contract_info['address']
-
 contract = web3.eth.contract(address=contract_address, abi=contract_abi)
+
+#Connection with MongoDB
+try:
+    client = MongoClient('mongodb+srv://sghack:sghack@sg-hack.8a7arb2.mongodb.net/')
+    # Optional: Verify connection
+    client.admin.command('ping')
+    print("Connected to MongoDB")
+    db = client['eVault'] 
+    user_collection = db['users']
+except (ConnectionError, ConfigurationError) as e:
+    print(f"Failed to connect to MongoDB: {e}")
+
 
 fixed_key = base64.urlsafe_b64encode(os.urandom(32))# 32 bytes
 cipher = Fernet(fixed_key)
+
 # IPFS API URL
 ipfs_api_url = 'http://127.0.0.1:5001/api/v0'
 
+#Document Releated APIs
 @app.route('/upload', methods=['POST'])
 def upload_document():
     try:
@@ -111,7 +128,6 @@ def get_record(record_id):
 def get_all_records():
     try:
         records = contract.functions.getAllRecords().call()
-        # Decrypt the IPFS hash
         all_records = [
             {'id': record[0], 'ipfs_hash': record[1], 'title': record[2], 'owner': record[3]}
             for record in records
@@ -145,8 +161,8 @@ def download_document(record_id):
         
         # Log the response
         print(f"IPFS response status: {response.status_code}")
-        print(f"IPFS response content: {response.content}")
-
+        
+        # print(f"IPFS response content: {response.content}")
         response.raise_for_status()
         encrypted_file = response.content
 
@@ -160,11 +176,58 @@ def download_document(record_id):
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({'error': str(e)}), 500
-
-
-
-
-
     
+@app.route('/delete/<int:record_id>', methods=['DELETE','POST'])
+def delete_document(record_id):
+    try:
+        print("recordID",record_id)
+        
+        # Call the smart contract function to delete the record
+        tx_hash = contract.functions.deleteRecord(record_id).transact({'from': web3.eth.accounts[0]})
+        receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+
+        return jsonify({'tx_hash': tx_hash.hex(), 'status': 'Document deleted'}), 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+#User Related Apis
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    user_type = data.get('user_type')
+
+    if not username or not password or not user_type:
+        return jsonify({'error': 'Please provide all required fields'}), 400
+
+    # Check if the user already exists
+    if user_collection.find_one({'username': username}):
+        return jsonify({'error': 'User already exists'}), 400
+
+    # Hash the password for security
+    hashed_password = generate_password_hash(password)
+    
+    #Cipher Key generation
+    user_random_key = base64.urlsafe_b64encode(os.urandom(32))# 32 bytes
+    user_cipher = Fernet(user_random_key)
+    cipher_key=user_cipher.encrypt(password.encode())
+    # Create a new user
+    new_user = {
+        'username': username,
+        'password': hashed_password,
+        'user_type': user_type,
+        'cipher_key': cipher_key
+    }
+
+    # Insert the new user into the database
+    user_collection.insert_one(new_user)
+
+    return jsonify({'message': 'User registered successfully'}), 201
+
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,5 +1,5 @@
 {
-  "address": "0xEcBd61D6d41f9BeddC7BE80755Fde6E74F4E7775",
+  "address": "0x1F35F4be2c7057cb6905BdfEa8599E3dC18508a3",
   "abi": [
     {
       "anonymous": false,
@@ -64,6 +64,26 @@
       "name": "RecordCreated",
       "type": "event",
       "signature": "0x5516ba31be0cd157fb67a13dd3abcd94b19579a6caf18b78b1655bd1398d19bf"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "RecordDeleted",
+      "type": "event",
+      "signature": "0x7d14a037f6460104a7e358ca6256314e3b495e7d360a781b444e183be65c18b2"
     },
     {
       "anonymous": false,
@@ -158,6 +178,20 @@
       "stateMutability": "nonpayable",
       "type": "function",
       "signature": "0x7f77095b"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "recordId",
+          "type": "uint256"
+        }
+      ],
+      "name": "deleteRecord",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x061f9811"
     },
     {
       "inputs": [

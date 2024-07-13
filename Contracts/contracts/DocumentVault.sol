@@ -24,6 +24,7 @@ contract DocumentVault {
 
     event RecordCreated(uint id, string ipfsHash, string title, address owner);
     event RecordUpdated(uint id, string ipfsHash, string title, address owner);
+    event RecordDeleted(uint id, address owner);
     event ActivityLogged(uint recordId, string action, address user, uint timestamp);
 
     function createRecord(string memory ipfsHash, string memory title) public {
@@ -53,11 +54,33 @@ contract DocumentVault {
         emit ActivityLogged(recordId, action, msg.sender, block.timestamp);
     }
 
+    function deleteRecord(uint recordId) public {
+        require(records[recordIdToIndex[recordId]].owner == msg.sender, "Only the owner can delete the record");
+
+        // Remove the record from the array
+        uint index = recordIdToIndex[recordId];
+        uint lastIndex = records.length - 1;
+
+        if (index != lastIndex) {
+            Record memory lastRecord = records[lastIndex];
+            records[index] = lastRecord;
+            recordIdToIndex[lastRecord.id] = index;
+        }
+        records.pop();
+
+        // Remove associated activities
+        delete recordIdToActivityIds[recordId];
+        delete recordIdToIndex[recordId];
+
+        emit RecordDeleted(recordId, msg.sender);
+    }
+
     function getRecord(uint recordId) public view returns (uint, string memory, string memory, address) {
+        require(recordIdToIndex[recordId] < records.length, "Record does not exist");
         Record memory record = records[recordIdToIndex[recordId]];
         return (record.id, record.ipfsHash, record.title, record.owner);
     }
-
+    
     function getAllRecords() public view returns (Record[] memory) {
         return records;
     }

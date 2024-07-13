@@ -18,3 +18,24 @@
 .navbar a:hover {
     text-decoration: underline;
 }
+
+.button-container {
+    display: flex;
+    gap: 10px;
+}
+
+.small-button {
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.delete-button {
+    background-color: red;
+    color: white;
+    border: none;
+}
+
+.delete-button:hover {
+    background-color: darkred;
+}
