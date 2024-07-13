@@ -83,12 +83,13 @@ def delete_document(record_id):
 @app.route('/log_activity/<int:record_id>', methods=['POST'])
 def log_activity(record_id):
     try:
-        if 'action' not in request.form or 'role' not in request.form:
-            return jsonify({'error': 'Action and role are required'}), 400
+        if 'action' not in request.form or 'role' not in request.form or 'ipfsHash' not in request.form:
+            return jsonify({'error': 'Action, role, and ipfsHash are required'}), 400
 
         action = request.form['action']
         role = request.form['role']
-        tx_hash = contract.functions.logActivity(role, record_id, action).transact({'from': web3.eth.accounts[0], 'gas': 2000000})
+        ipfs_hash = request.form['ipfsHash']
+        tx_hash = contract.functions.logActivity(role, record_id, ipfs_hash, action).transact({'from': web3.eth.accounts[0], 'gas': 2000000})
         return jsonify({'tx_hash': tx_hash.hex()}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -117,7 +118,7 @@ def get_activities(record_id):
     try:
         role = request.args.get('role')
         activities = contract.functions.getActivities(role, record_id).call()
-        all_activities = [{'recordId': activity[0], 'action': activity[1], 'user': activity[2], 'timestamp': activity[3]} for activity in activities]
+        all_activities = [{'recordId': activity[0], 'ipfsHash': activity[1], 'action': activity[2], 'user': activity[3], 'timestamp': activity[4]} for activity in activities]
         return jsonify(all_activities), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -135,9 +136,10 @@ def generate_log():
             for activity in activities:
                 log_entries.append({
                     'record_id': record_id,
-                    'action': activity[1],
-                    'user': activity[2],
-                    'timestamp': activity[3]
+                    'ipfsHash': activity[1],
+                    'action': activity[2],
+                    'user': activity[3],
+                    'timestamp': activity[4]
                 })
         log_entries.sort(key=lambda x: x['timestamp'])
 
@@ -145,7 +147,7 @@ def generate_log():
         with open(log_file_path, 'w') as log_file:
             for entry in log_entries:
                 timestamp = datetime.utcfromtimestamp(entry['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
-                log_file.write(f"Record ID: {entry['record_id']}, Action: {entry['action']}, User: {entry['user']}, Timestamp: {timestamp}\n")
+                log_file.write(f"Record ID: {entry['record_id']}, IPFS Hash: {entry['ipfsHash']}, Action: {entry['action']}, User: {entry['user']}, Timestamp: {timestamp}\n")
 
         return send_file(log_file_path, as_attachment=True)
     except Exception as e:
