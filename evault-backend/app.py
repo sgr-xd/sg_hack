@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file,session
 from flask_cors import CORS
 from web3 import Web3
 import json
@@ -13,9 +13,14 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from pymongo import MongoClient
 from pymongo.errors import ConfigurationError
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash,check_password_hash
+from flask_session import Session
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True) 
+
+app.config['SECRET_KEY'] = 'supersecretkey'
+app.config['SESSION_TYPE'] = 'filesystem'
+Session(app)
 
 # Connect to the local Ganache blockchain
 web3 = Web3(Web3.HTTPProvider('http://127.0.0.1:7545'))
@@ -38,6 +43,23 @@ try:
 except (ConnectionError, ConfigurationError) as e:
     print(f"Failed to connect to MongoDB: {e}")
 
+try:
+    # Check if admin user already exists
+    if user_collection.count_documents({'username': 'admin'}) == 0:
+        # Create admin user
+        admin_random_key = base64.urlsafe_b64encode(os.urandom(32))# 32 bytes
+        user_cipher = Fernet(admin_random_key)
+        cipher_key=user_cipher.encrypt('admin'.encode())
+        admin_user = {
+            'username': 'admin',
+            'password': generate_password_hash('admin'),
+            'user_type': 'admin',
+            'cipher_key': cipher_key
+        }
+        user_collection.insert_one(admin_user)
+        print("Default admin user created.")
+except Exception as e:
+        print(jsonify({'error': str(e)}), 500)
 
 fixed_key = base64.urlsafe_b64encode(os.urandom(32))# 32 bytes
 cipher = Fernet(fixed_key)
@@ -227,6 +249,37 @@ def register():
     return jsonify({'message': 'User registered successfully'}), 201
 
 
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({'error': 'Please provide all required fields'}), 400
+
+    user = user_collection.find_one({'username': username})
+    if user and check_password_hash(user['password'], password):
+        session['username'] = username
+        print(session['username'])
+        session['user_type'] = user['user_type']
+        return jsonify({'message': 'Login successful', 'user_type': user['user_type']}), 200
+    else:
+        return jsonify({'error': 'Invalid credentials'}), 401
+
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.pop('username', None)
+    session.pop('user_type', None)
+    return jsonify({'message': 'Logged out successfully'}), 200
+
+@app.route('/check_session', methods=['GET'])
+def check_session():
+    if 'username' in session:
+        return jsonify({'username': session['username'], 'user_type': session['user_type']}), 200
+    else:
+        return jsonify({'error': 'No active session'}), 401
 
 
 if __name__ == '__main__':

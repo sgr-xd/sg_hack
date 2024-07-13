@@ -16,83 +16,66 @@ contract DocumentVault {
         uint timestamp;
     }
 
-    Record[] private records;
-    Activity[] private activities;
-    mapping(uint => uint) private recordIdToIndex;
-    mapping(uint => uint[]) private recordIdToActivityIds;
-    uint private nextRecordId = 1;
+    mapping(uint => Record) public records;
+    mapping(uint => Activity[]) public activities;
+    uint public recordCount;
 
-    event RecordCreated(uint id, string ipfsHash, string title, address owner);
-    event RecordUpdated(uint id, string ipfsHash, string title, address owner);
-    event RecordDeleted(uint id, address owner);
-    event ActivityLogged(uint recordId, string action, address user, uint timestamp);
+    event RecordCreated(
+        uint id,
+        string ipfsHash,
+        string title,
+        address owner
+    );
 
-    function createRecord(string memory ipfsHash, string memory title) public {
-        uint recordId = nextRecordId;
-        records.push(Record(recordId, ipfsHash, title, msg.sender));
-        recordIdToIndex[recordId] = records.length - 1;
-        nextRecordId++;
-        
-        emit RecordCreated(recordId, ipfsHash, title, msg.sender);
+    event RecordUpdated(
+        uint id,
+        string ipfsHash,
+        string title,
+        address owner
+    );
+
+    event ActivityLogged(
+        uint recordId,
+        string action,
+        address user,
+        uint timestamp
+    );
+
+    function createRecord(string memory _ipfsHash, string memory _title) public {
+        recordCount++;
+        records[recordCount] = Record(recordCount, _ipfsHash, _title, msg.sender);
+        activities[recordCount].push(Activity(recordCount, "Created", msg.sender, block.timestamp));
+        emit RecordCreated(recordCount, _ipfsHash, _title, msg.sender);
     }
 
-    function updateRecord(uint recordId, string memory ipfsHash, string memory title) public {
-        require(records[recordIdToIndex[recordId]].owner == msg.sender, "Only the owner can update the record");
-
-        records[recordIdToIndex[recordId]].ipfsHash = ipfsHash;
-        records[recordIdToIndex[recordId]].title = title;
-
-        emit RecordUpdated(recordId, ipfsHash, title, msg.sender);
+    function updateRecord(uint _id, string memory _ipfsHash, string memory _title) public {
+        require(_id <= recordCount, "Record does not exist.");
+        Record storage record = records[_id];
+        record.ipfsHash = _ipfsHash;
+        record.title = _title;
+        activities[_id].push(Activity(_id, "Updated", msg.sender, block.timestamp));
+        emit RecordUpdated(_id, _ipfsHash, _title, msg.sender);
     }
 
-    function logActivity(uint recordId, string memory action) public {
-        require(records[recordIdToIndex[recordId]].owner == msg.sender, "Only the owner can log activity");
-
-        activities.push(Activity(recordId, action, msg.sender, block.timestamp));
-        recordIdToActivityIds[recordId].push(activities.length - 1);
-
-        emit ActivityLogged(recordId, action, msg.sender, block.timestamp);
+    function logActivity(uint _recordId, string memory _action) public {
+        require(_recordId <= recordCount, "Record does not exist.");
+        activities[_recordId].push(Activity(_recordId, _action, msg.sender, block.timestamp));
+        emit ActivityLogged(_recordId, _action, msg.sender, block.timestamp);
     }
 
-    function deleteRecord(uint recordId) public {
-        require(records[recordIdToIndex[recordId]].owner == msg.sender, "Only the owner can delete the record");
-
-        // Remove the record from the array
-        uint index = recordIdToIndex[recordId];
-        uint lastIndex = records.length - 1;
-
-        if (index != lastIndex) {
-            Record memory lastRecord = records[lastIndex];
-            records[index] = lastRecord;
-            recordIdToIndex[lastRecord.id] = index;
-        }
-        records.pop();
-
-        // Remove associated activities
-        delete recordIdToActivityIds[recordId];
-        delete recordIdToIndex[recordId];
-
-        emit RecordDeleted(recordId, msg.sender);
+    function getRecord(uint _id) public view returns (Record memory) {
+        return records[_id];
     }
 
-    function getRecord(uint recordId) public view returns (uint, string memory, string memory, address) {
-        require(recordIdToIndex[recordId] < records.length, "Record does not exist");
-        Record memory record = records[recordIdToIndex[recordId]];
-        return (record.id, record.ipfsHash, record.title, record.owner);
-    }
-    
     function getAllRecords() public view returns (Record[] memory) {
-        return records;
+        Record[] memory allRecords = new Record[](recordCount);
+        for (uint i = 1; i <= recordCount; i++) {
+            allRecords[i - 1] = records[i];
+        }
+        return allRecords;
     }
 
-    function getActivities(uint recordId) public view returns (Activity[] memory) {
-        uint[] memory activityIds = recordIdToActivityIds[recordId];
-        Activity[] memory result = new Activity[](activityIds.length);
-
-        for (uint i = 0; i < activityIds.length; i++) {
-            result[i] = activities[activityIds[i]];
-        }
-
-        return result;
+    function getActivities(uint _recordId) public view returns (Activity[] memory) {
+        return activities[_recordId];
     }
 }

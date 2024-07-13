@@ -1,5 +1,5 @@
 {
-  "address": "0x1F35F4be2c7057cb6905BdfEa8599E3dC18508a3",
+  "address": "0xdE9325Bf8F64b914552f076EfcCC60a3b6122FBE",
   "abi": [
     {
       "anonymous": false,
@@ -76,26 +76,6 @@
         },
         {
           "indexed": false,
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        }
-      ],
-      "name": "RecordDeleted",
-      "type": "event",
-      "signature": "0x7d14a037f6460104a7e358ca6256314e3b495e7d360a781b444e183be65c18b2"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
           "internalType": "string",
           "name": "ipfsHash",
           "type": "string"
@@ -120,6 +100,75 @@
     {
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "activities",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "recordId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "action",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xfcfc1a76"
+    },
+    {
+      "inputs": [],
+      "name": "recordCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x900407bc"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "records",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
           "internalType": "string",
           "name": "ipfsHash",
           "type": "string"
@@ -127,6 +176,29 @@
         {
           "internalType": "string",
           "name": "title",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x34461067"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_ipfsHash",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_title",
           "type": "string"
         }
       ],
@@ -140,17 +212,17 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "recordId",
+          "name": "_id",
           "type": "uint256"
         },
         {
           "internalType": "string",
-          "name": "ipfsHash",
+          "name": "_ipfsHash",
           "type": "string"
         },
         {
           "internalType": "string",
-          "name": "title",
+          "name": "_title",
           "type": "string"
         }
       ],
@@ -164,12 +236,12 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "recordId",
+          "name": "_recordId",
           "type": "uint256"
         },
         {
           "internalType": "string",
-          "name": "action",
+          "name": "_action",
           "type": "string"
         }
       ],
@@ -183,45 +255,38 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "recordId",
-          "type": "uint256"
-        }
-      ],
-      "name": "deleteRecord",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x061f9811"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "recordId",
+          "name": "_id",
           "type": "uint256"
         }
       ],
       "name": "getRecord",
       "outputs": [
         {
-          "internalType": "uint256",
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "ipfsHash",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "title",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct DocumentVault.Record",
           "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        },
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",
@@ -270,7 +335,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "recordId",
+          "name": "_recordId",
           "type": "uint256"
         }
       ],

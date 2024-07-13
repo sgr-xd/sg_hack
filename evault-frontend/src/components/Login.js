@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -8,20 +9,21 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        const response = await fetch('http://localhost:5000/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password }),
-        });
-        const data = await response.json();
-        if (response.ok) {
-            navigate('/dashboard', { state: { userType: data.user_type } });
-        } else {
-            alert('Login failed');
+        try {
+            const response = await axios.post('http://localhost:5000/login', {
+                username,
+                password,
+            }, { withCredentials: true });
+    
+            if (response.status === 200) {
+                navigate('/dashboard', { state: { userType: response.data.user_type } });
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('Login failed: ' + (error.response?.data?.error || error.message));
         }
     };
+    
 
     return (
         <form onSubmit={handleLogin}>
