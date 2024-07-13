@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
+from datetime import datetime
 from web3 import Web3
 import json
 import requests
@@ -107,5 +108,35 @@ def get_activities(record_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+
+@app.route('/generate_log', methods=['GET'])
+def generate_log():
+    try:
+        role = request.args.get('role')
+        records = contract.functions.getAllRecords(role).call()
+        log_entries = []
+
+        for record in records:
+            record_id = record[0]
+            activities = contract.functions.getActivities(role, record_id).call()
+            for activity in activities:
+                log_entries.append({
+                    'record_id': record_id,
+                    'action': activity[1],
+                    'user': activity[2],
+                    'timestamp': activity[3]
+                })
+        log_entries.sort(key=lambda x: x['timestamp'])
+
+        log_file_path = 'activity_log.txt'
+        with open(log_file_path, 'w') as log_file:
+            for entry in log_entries:
+                timestamp = datetime.utcfromtimestamp(entry['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
+                log_file.write(f"Record ID: {entry['record_id']}, Action: {entry['action']}, User: {entry['user']}, Timestamp: {timestamp}\n")
+
+        return send_file(log_file_path, as_attachment=True)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 if __name__ == '__main__':
     app.run(debug=True)
