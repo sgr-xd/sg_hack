@@ -32,7 +32,7 @@ const AllDocuments = () => {
   const deleteDocument = async (recordId) => {
     try {
       console.log(recordId);
-      await axios.delete(`http://localhost:5000/delete/${recordId}`);
+      await axios.post(`http://localhost:5000/delete/${recordId}`);
       fetchRecords(); // Refresh the list after deletion
     } catch (error) {
       console.error("Error deleting document:", error);

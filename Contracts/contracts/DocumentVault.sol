@@ -22,10 +22,24 @@ contract DocumentVault {
     mapping(uint => Activity[]) public activities;
     uint public recordCount;
 
-    event RecordCreated(uint id, string ipfsHash, string title, address owner);
+    event RecordCreated(
+        uint id,
+        string ipfsHash,
+        string title,
+        address owner
+    );
 
-    event RecordUpdated(uint id, string ipfsHash, string title, address owner);
-    event RecordDeleted(uint id, address owner);
+    event RecordUpdated(
+        uint id,
+        string ipfsHash,
+        string title,
+        address owner
+    );
+
+    event RecordDeleted(
+        uint id,
+        address owner
+    );
 
     event ActivityLogged(
         uint recordId,
@@ -35,7 +49,11 @@ contract DocumentVault {
         uint timestamp
     );
 
-    event PermissionChecked(string role, string action, bool result);
+    event PermissionChecked(
+        string role,
+        string action,
+        bool result
+    );
 
     mapping(string => mapping(string => bool)) public permissions;
 
@@ -62,117 +80,47 @@ contract DocumentVault {
         _;
     }
 
-    function createRecord(
-        string memory role,
-        string memory _ipfsHash,
-        string memory _title
-    ) public onlyRole(role, "create") {
+    function createRecord(string memory role, string memory _ipfsHash, string memory _title) public onlyRole(role, "create") {
         recordCount++;
-        records[recordCount] = Record(
-            recordCount,
-            _ipfsHash,
-            _title,
-            msg.sender,
-            true
-        );
-        activities[recordCount].push(
-            Activity(
-                recordCount,
-                _ipfsHash,
-                "Created",
-                msg.sender,
-                block.timestamp
-            )
-        );
+        records[recordCount] = Record(recordCount, _ipfsHash, _title, msg.sender, true);
+        activities[recordCount].push(Activity(recordCount, _ipfsHash, "Created", msg.sender, block.timestamp));
         emit RecordCreated(recordCount, _ipfsHash, _title, msg.sender);
     }
 
-    function updateRecord(
-        string memory role,
-        uint _id,
-        string memory _ipfsHash,
-        string memory _title
-    ) public onlyRole(role, "update") {
-        require(
-            _id <= recordCount && records[_id].exists,
-            "Record does not exist."
-        );
+    function updateRecord(string memory role, uint _id, string memory _ipfsHash, string memory _title) public onlyRole(role, "update") {
+        require(_id <= recordCount && records[_id].exists, "Record does not exist.");
         Record storage record = records[_id];
         record.ipfsHash = _ipfsHash;
         record.title = _title;
-        activities[_id].push(
-            Activity(_id, _ipfsHash, "Updated", msg.sender, block.timestamp)
-        );
+        activities[_id].push(Activity(_id, _ipfsHash, "Updated", msg.sender, block.timestamp));
         emit RecordUpdated(_id, _ipfsHash, _title, msg.sender);
     }
 
-    function deleteRecord(
-        string memory role,
-        uint _id
-    ) public onlyRole(role, "delete") {
-        require(
-            _id <= recordCount && records[_id].exists,
-            "Record does not exist."
-        );
+    function deleteRecord(string memory role, uint _id) public onlyRole(role, "delete") {
+        require(_id <= recordCount && records[_id].exists, "Record does not exist.");
         records[_id].exists = false;
-        activities[_id].push(
-            Activity(
-                _id,
-                records[_id].ipfsHash,
-                "Deleted",
-                msg.sender,
-                block.timestamp
-            )
-        );
+        activities[_id].push(Activity(_id, records[_id].ipfsHash, "Deleted", msg.sender, block.timestamp));
         emit RecordDeleted(_id, msg.sender);
     }
 
-    function logActivity(
-        string memory role,
-        uint _recordId,
-        string memory _ipfsHash,
-        string memory _action
-    ) public onlyRole(role, "logActivity") {
-        require(
-            _recordId <= recordCount && records[_recordId].exists,
-            "Record does not exist."
-        );
-
-        activities[_recordId].push(
-            Activity(_recordId, _ipfsHash, _action, msg.sender, block.timestamp)
-        );
-
-        emit ActivityLogged(
-            _recordId,
-            _ipfsHash,
-            _action,
-            msg.sender,
-            block.timestamp
-        );
+    function logActivity(string memory role, uint _recordId, string memory _ipfsHash, string memory _action) public onlyRole(role, "logActivity") {
+        require(_recordId <= recordCount && records[_recordId].exists, "Record does not exist.");
+        activities[_recordId].push(Activity(_recordId, _ipfsHash, _action, msg.sender, block.timestamp));
+        emit ActivityLogged(_recordId, _ipfsHash, _action, msg.sender, block.timestamp);
     }
-    function checkRole(
-        string memory role,
-        string memory action
-    ) internal view returns (bool) {
+
+    function checkRole(string memory role, string memory action) internal view returns (bool) {
         return permissions[role][action];
     }
 
-    function getRecord(
-        string memory role,
-        uint _id
-    ) public view returns (Record memory) {
+    function getRecord(string memory role, uint _id) public view returns (Record memory) {
         require(checkRole(role, "getRecord"), "Access denied: Incorrect role");
         require(records[_id].exists, "Record does not exist.");
         return records[_id];
     }
 
-    function getAllRecords(
-        string memory role
-    ) public view returns (Record[] memory) {
-        require(
-            checkRole(role, "getAllRecords"),
-            "Access denied: Incorrect role"
-        );
+    function getAllRecords(string memory role) public view returns (Record[] memory) {
+        require(checkRole(role, "getAllRecords"), "Access denied: Incorrect role");
         uint activeCount = 0;
         for (uint i = 1; i <= recordCount; i++) {
             if (records[i].exists) {
@@ -190,14 +138,8 @@ contract DocumentVault {
         return allRecords;
     }
 
-    function getActivities(
-        string memory role,
-        uint _recordId
-    ) public view returns (Activity[] memory) {
-        require(
-            checkRole(role, "getActivities"),
-            "Access denied: Incorrect role"
-        );
+    function getActivities(string memory role, uint _recordId) public view returns (Activity[] memory) {
+        require(checkRole(role, "getActivities"), "Access denied: Incorrect role");
         return activities[_recordId];
     }
 }

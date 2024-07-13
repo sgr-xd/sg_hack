@@ -107,19 +107,21 @@ def update_document(record_id):
         files = {'file': encrypted_file}
         response = requests.post(f'{ipfs_api_url}/add', files=files)
         ipfs_hash = response.json()['Hash']
+        role=user_role
 
-        tx_hash = contract.functions.updateRecord(user_role, record_id, ipfs_hash, title).transact({'from': web3.eth.accounts[0]})
+        tx_hash = contract.functions.updateRecord(role, record_id, ipfs_hash, title).transact({'from': web3.eth.accounts[0], 'gas': 2000000})
 
         return jsonify({'tx_hash': tx_hash.hex(), 'ipfs_hash': ipfs_hash}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-@app.route('/log_activity/<int:record_id>', methods=['POST'])
-def log_activity(record_id):
+    
+@app.route('/delete/<int:record_id>', methods=['POST'])
+def delete_document(record_id):
     global user_role
     try:
-        action = request.form['action']
-        tx_hash = contract.functions.logActivity(user_role, record_id, action).transact({'from': web3.eth.accounts[0]})
+        role = user_role
+        # Call smart contract function to delete the record
+        tx_hash = contract.functions.deleteRecord(role, record_id).transact({'from': web3.eth.accounts[0], 'gas': 2000000})
         return jsonify({'tx_hash': tx_hash.hex()}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -128,7 +130,8 @@ def log_activity(record_id):
 def get_record(record_id):
     global user_role
     try:
-        record = contract.functions.getRecord(user_role, record_id).call()
+        role=user_role
+        record = contract.functions.getRecord(role, record_id).call()
         return jsonify({'id': record[0], 'ipfs_hash': record[1], 'title': record[2], 'owner': record[3]}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -137,11 +140,9 @@ def get_record(record_id):
 def get_all_records():
     global user_role
     try:
-        records = contract.functions.getAllRecords(user_role).call()
-        all_records = [
-            {'id': record[0], 'ipfs_hash': record[1], 'title': record[2], 'owner': record[3]}
-            for record in records
-        ]
+        role = user_role
+        records = contract.functions.getAllRecords(role).call()
+        all_records = [{'id': record[0], 'ipfs_hash': record[1], 'title': record[2], 'owner': record[3]} for record in records]
         return jsonify(all_records), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -150,11 +151,9 @@ def get_all_records():
 def get_activities(record_id):
     global user_role
     try:
-        activities = contract.functions.getActivities(user_role, record_id).call()
-        all_activities = [
-            {'recordId': activity[0], 'action': activity[1], 'user': activity[2], 'timestamp': activity[3]}
-            for activity in activities
-        ]
+        role = user_role
+        activities = contract.functions.getActivities(role, record_id).call()
+        all_activities = [{'recordId': activity[0], 'ipfsHash': activity[1], 'action': activity[2], 'user': activity[3], 'timestamp': activity[4]} for activity in activities]
         return jsonify(all_activities), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -179,17 +178,7 @@ def download_document(record_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/delete/<int:record_id>', methods=['POST'])
-def delete_document(record_id):
-    global user_role
-    try:
-        role = user_role
 
-        # Call smart contract function to delete the record
-        tx_hash = contract.functions.deleteRecord(role, record_id).transact({'from': web3.eth.accounts[0], 'gas': 2000000})
-        return jsonify({'tx_hash': tx_hash.hex()}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 # User Related APIs
 @app.route('/register', methods=['POST'])
