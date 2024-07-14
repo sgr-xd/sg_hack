@@ -3,8 +3,6 @@
 
 ## Links
 
-### PPT: https://docs.google.com/presentation/d/18o4WyJAdJ7EUOu0tdTgW8MK-NhtNDUYRzD5gzZg8nUM/edit?usp=sharing
-
 ### Drive Link: https://drive.google.com/drive/folders/1ZWtNlubkANJ3LBlV7G9rVRtFVDC_VGpO?usp=sharing
 
 
