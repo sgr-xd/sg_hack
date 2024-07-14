@@ -14,7 +14,7 @@ The eVault DApp securely stores and manages legal files using Ethereum blockchai
 - **Database**: GCP for Legal Database, MongoDB
 - **APIs**: Flask backend logic, connector APIs for GCP integration
 - **Access Control**: Smart contracts
-
+file:///home/harish/Pictures/Screenshots/Screenshot%20from%202024-07-14%2016-30-42.png
 ## Components
 
 ### Smart Contracts
