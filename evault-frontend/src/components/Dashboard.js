@@ -97,7 +97,10 @@ const Dashboard = () => {
         </Link>
         {userType === "Admin" && (
           <Link
-            to="#"
+            to={{
+              pathname: "/dashboard",
+              state: { userType: userType },
+            }}
             className="card generate-log"
             onClick={handleGenerateLog}
           >
@@ -105,7 +108,14 @@ const Dashboard = () => {
           </Link>
         )}
         {userType === "Admin" && (
-          <Link to="#" className="card generate-log" onClick={handleBackup}>
+          <Link
+            to={{
+              pathname: "/dashboard",
+              state: { userType: userType },
+            }}
+            className="card generate-log"
+            onClick={handleBackup}
+          >
             Backup
           </Link>
         )}

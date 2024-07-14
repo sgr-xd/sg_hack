@@ -15,7 +15,7 @@ const UploadDocument = () => {
     formData.append("file", file);
     formData.append("title", title);
     const response = await axios.post("http://127.0.0.1:5000/upload", formData);
-    alert(`Document uploaded! TX Hash: ${response.data.tx_hash}`);
+    alert(`Document uploaded! Successfully`);
   };
 
   return (

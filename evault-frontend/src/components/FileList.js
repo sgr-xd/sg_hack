@@ -47,7 +47,7 @@ const FileList = () => {
 
   return (
     <div className="file-list">
-      <h2>Available Files</h2>
+      <h2>Available Files In Legal Database</h2>
       {loading && <p>Loading...</p>}
       {error && <p>{error}</p>}
       <table>

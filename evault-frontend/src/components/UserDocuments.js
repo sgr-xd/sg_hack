@@ -38,14 +38,6 @@ const UserDocuments = () => {
     }
   };
 
-  const deleteDocument = async (recordId) => {
-    try {
-      await axios.post(`http://localhost:5000/delete/${recordId}`);
-      fetchRecords();
-    } catch (error) {
-      console.error("Error deleting document:", error);
-    }
-  };
 
   const GCSuploadDocument = async (recordId) => {
     try {
@@ -88,7 +80,6 @@ const UserDocuments = () => {
                 <td className="button-container">
                   <button onClick={() => GCSuploadDocument(record.id)} className="small-button">Upload to Legal DB</button>
                   <button onClick={() => downloadDocument(record.id)} className="small-button">Download</button>
-                  <button onClick={() => deleteDocument(record.id)} className="small-button delete-button">Delete</button>
                 </td>
               </tr>
             ))}

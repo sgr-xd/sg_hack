@@ -134,8 +134,34 @@ def delete_document(record_id):
     global user_role
     try:
         role = user_role
+        print("Role: %s" % role)
         # Call smart contract function to delete the record
         tx_hash = contract.functions.deleteRecord(role, record_id).transact({'from': web3.eth.accounts[0], 'gas': 2000000})
+        
+        query = {
+                'records': record_id
+            }
+            
+            # Project the username field
+        projection = {
+            'username': 1
+        }
+            
+            # Find the user
+        user = user_collection.find_one(query, projection)
+        print(user)
+
+        # Retrieve the user's records from the collection
+        user_records = user_collection.find_one({'username': user['username']})
+
+        if user_records:
+            print(user_records)
+            # Filter out the record with the specified ID
+            updated_records = [record for record in user_records['records'] if record != int(record_id)]
+            print('updated records: %s' % updated_records)
+            # Update the collection with the modified records
+            user_collection.update_one({'username': user['username']}, {'$set': {'records': updated_records}})
+
         return jsonify({'tx_hash': tx_hash.hex()}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
