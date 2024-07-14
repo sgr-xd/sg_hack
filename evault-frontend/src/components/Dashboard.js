@@ -33,7 +33,19 @@ const Dashboard = () => {
       alert("Logout failed: " + (error.response?.data?.error || error.message));
     }
   };
-
+  const handleImportGCP = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/upload_from_gcs", {
+        withCredentials: true,
+        responseType: "blob", // Important for downloading files
+      });
+  }catch (error) {
+    alert(
+      "Failed to fetch records: " +
+        (error.response?.data?.error || error.message)
+    );
+  }
+};
   const handleGenerateLog = async () => {
     try {
       const response = await axios.get("http://localhost:5000/generate_log", {
@@ -58,7 +70,23 @@ const Dashboard = () => {
       );
     }
   };
-
+  const handleBackup = async () => {
+    try {
+      const response = await axios.post("http://localhost:5000/backup", {
+        withCredentials: true,
+        responseType: "json", // Use 'json' since you expect a JSON response
+      });
+      console.log("Fetched records and initiated Backup.");
+      console.log(response.data.backup_entries); // Log backup entries if needed
+      alert("Backup completed successfully!");
+    } catch (error) {
+      alert(
+        "Failed to fetch records: " +
+        (error.response?.data?.error || error.message)
+      );
+    }
+  };
+  
   return (
     <div className="dashboard">
       <button className="logout-button" onClick={handleLogout}>
@@ -78,6 +106,17 @@ const Dashboard = () => {
           Generate Log
         </Link>
         )}
+        {userType === "Admin" && (
+          <Link to="#" className="card generate-log" onClick={handleBackup}>
+          Backup
+        </Link>
+        )}
+        {userType === "Admin" && (
+          <Link to="#" className="card generate-log" onClick={handleImportGCP}>
+          Import From Legal Database
+        </Link>
+        )}
+        
         {userType === "Admin" && (
           <Link to="/admin" className="card">
             List Users

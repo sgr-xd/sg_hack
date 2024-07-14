@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
-
+import './AllDocuments.css';
 const AllDocuments = () => {
   const [records, setRecords] = useState([]);
   const location = useLocation();
@@ -70,12 +70,40 @@ const AllDocuments = () => {
   const deleteDocument = async (recordId) => {
     try {
       await axios.post(`http://localhost:5000/delete/${recordId}`);
-      fetchRecords(); // Refresh the list after deletion
+      fetchRecords();
     } catch (error) {
       console.error("Error deleting document:", error);
     }
   };
 
+  const GCSuploadDocument = async (recordId) => {
+    try {
+      const response = await axios.post(`http://localhost:5000/upload_to_gcs/${recordId}`);
+      
+      // Check if the response status is 201 (Created) which means the file upload was successful
+      if (response.status === 201) {
+        console.log(response.data.message);
+        alert(response.data.message)
+      } else {
+        console.error("Unexpected response status:", response.status);
+      }
+    } catch (error) {
+      if (error.response) {
+        // The request was made, but the server responded with a status code that falls out of the range of 2xx
+        console.error("Error response data:", error.response.data);
+        console.error("Error response status:", error.response.status);
+        console.error("Error response headers:", error.response.headers);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error("Error request data:", error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error("Error message:", error.message);
+      }
+      console.error("Error config:", error.config);
+    }
+  };
+  
   useEffect(() => {
     if (userType) {
       fetchRecords();
@@ -83,44 +111,37 @@ const AllDocuments = () => {
   }, [userType]);
 
   return (
-    <div>
-      <h2>All Documents</h2>
-      <ul>
-        {records.length === 0 ? (
-          <li>No documents found.</li>
-        ) : (
-          records.map((record) => (
-            <li
-              key={record.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <strong>{record.id}</strong>: <strong>{record.title}</strong> -
-                Owner: {record.owner}
-              </div>
-              <div className="button-container">
-                <button
-                  onClick={() => downloadDocument(record.id)}
-                  className="small-button"
-                >
-                  Download
-                </button>
-                <button
-                  onClick={() => deleteDocument(record.id)}
-                  className="small-button delete-button"
-                >
-                  Delete
-                </button>
-              </div>
-            </li>
-          ))
-        )}
-      </ul>
-    </div>
+    <div className="all-documents">
+    <h2>All Documents</h2>
+    {records.length === 0 ? (
+        <p>No documents found.</p>
+    ) : (
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Owner</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {records.map((record) => (
+                    <tr key={record.id}>
+                        <td><strong>{record.id}</strong></td>
+                        <td><strong>{record.title}</strong></td>
+                        <td>{record.owner}</td>
+                        <td className="button-container">
+                          <button onClick={() => GCSuploadDocument(record.id)} className="small-button">Upload to Legal DB</button>
+                            <button onClick={() => downloadDocument(record.id)} className="small-button">Download</button>
+                            <button onClick={() => deleteDocument(record.id)} className="small-button delete-button">Delete</button>
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    )}
+</div>
   );
 };
 

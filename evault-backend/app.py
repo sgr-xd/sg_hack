@@ -54,7 +54,8 @@ try:
             'username': 'admin',
             'password': generate_password_hash('admin'),
             'user_type': 'Admin',
-            'cipher_key': cipher_key
+            'cipher_key': cipher_key,
+            'records':[]
         }
         user_collection.insert_one(admin_user)
         print("Default admin user created.")
@@ -98,11 +99,11 @@ def upload_document():
         record_id = contract.functions.recordCount().call()  # Get the new record ID
        
         # Store record ID in user collection if not Admin
-        if user_role != "Admin":
-            user_collection.update_one(
-                {'username': user_name},
-                {'$push': {'records': record_id}}
-            )
+        
+        user_collection.update_one(
+            {'username': user_name},
+            {'$push': {'records': record_id}}
+        )
         return jsonify({'tx_hash': tx_hash.hex(), 'ipfs_hash': ipfs_hash}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -174,14 +175,21 @@ def get_activities(record_id):
 @app.route('/download/<int:record_id>', methods=['GET'])
 def download_document(record_id):
     global user_role
+    global user_name
     try:
-        record = contract.functions.getRecord(user_role, record_id).call()
+        role=user_role
+        print("Role inside Download: %s" % role)
+        record = contract.functions.getRecord(role, record_id).call()
         ipfs_hash = record[1]
 
         response = requests.post(f'{ipfs_api_url}/cat?arg={ipfs_hash}')
         response.raise_for_status()
         encrypted_file = response.content
 
+        user = user_collection.find_one({'username': user_name})
+        cipher_key=user['cipher_key']
+        print(cipher_key)
+        cipher = Fernet(cipher_key)
         decrypted_file = cipher.decrypt(encrypted_file)
 
         return send_file(io.BytesIO(decrypted_file),
@@ -308,15 +316,11 @@ def generate_log():
 
 
 #GCP apis
-@app.route('/upload_to_gcs', methods=['POST'])
-def upload_to_gcs():
+@app.route('/upload_to_gcs/<int:record_id>', methods=['POST'])
+def upload_to_gcs(record_id):
     global user_role
     try:
-        if 'record_id' not in request.form:
-            return jsonify({'error': 'Record ID is required'}), 400
-
-        record_id = int(request.form['record_id'])
-        role = "Admin"
+        role = user_role
 
         if role is None:
             return jsonify({'error': 'User role is not set'}), 400
@@ -330,20 +334,36 @@ def upload_to_gcs():
         # Fetch file data from IPFS
         response = requests.post(f'{ipfs_api_url}/cat?arg={ipfs_hash}')
         response.raise_for_status()
-        file_data = response.content
+        encrypted_file = response.content
 
+        query = {
+                'records': record_id
+            }
+            
+            # Project the username field
+        projection = {
+            'username': 1
+        }
+            
+            # Find the user
+        user = user_collection.find_one(query, projection)
+        print(user)
+        user_data = user_collection.find_one({'username': user['username']})
+        cipher_key=user_data['cipher_key']
+        print(cipher_key)
+        cipher = Fernet(cipher_key)
+        decrypted_file = cipher.decrypt(encrypted_file)
         # Create a file name based on the IPFS hash
         file_name = f'{ipfs_hash}.bin'
 
         # Upload file to Google Cloud Storage
         bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.blob(file_name)
-        blob.upload_from_string(file_data)
+        blob.upload_from_string(decrypted_file)
 
         return jsonify({'message': f'File {file_name} uploaded to GCS successfully.'}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 @app.route('/upload_from_gcs', methods=['POST'])
 def upload_from_gcs():
@@ -372,6 +392,69 @@ def upload_from_gcs():
         # Call smart contract function to store the IPFS hash
         tx_hash = contract.functions.createRecord(role, ipfs_hash, title).transact({'from': web3.eth.accounts[0], 'gas': 2000000})
         return jsonify({'tx_hash': tx_hash.hex(), 'ipfs_hash': ipfs_hash}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+#Backup
+@app.route('/backup', methods=['POST'])
+def backup():
+    global user_role
+    global user_name
+    try:
+        # role = user_role
+        role="Admin"
+        if not role:
+            return jsonify({'error': 'Role is required'}), 400
+        
+        # Fetch all records from the blockchain
+        records = contract.functions.getAllRecords("Admin").call()
+        
+        backup_entries = []
+        for record in records:
+            record_id = record[0]
+            ipfs_hash = record[1]
+
+            # Fetch file data from IPFS
+            response = requests.post(f'{ipfs_api_url}/cat?arg={ipfs_hash}')
+            response.raise_for_status()
+            encrypted_file = response.content
+
+            # user_name = user_collection.find_one({'records': record_id}, {'username': 1, '_id': 0})
+            query = {
+                'records': record_id
+            }
+            
+            # Project the username field
+            projection = {
+                'username': 1
+            }
+            
+            # Find the user
+            user = user_collection.find_one(query, projection)
+            print(user)
+            user_data = user_collection.find_one({'username': user['username']})
+            cipher_key=user_data['cipher_key']
+            print(cipher_key)
+            cipher = Fernet(cipher_key)
+            decrypted_file = cipher.decrypt(encrypted_file)
+
+            # Create a file name based on the IPFS hash or record details
+            file_name = f'{ipfs_hash}'
+
+            # Upload file to Google Cloud Storage
+            bucket = storage_client.get_bucket('sg-hk-backup')
+            blob = bucket.blob(file_name)
+            blob.upload_from_string(decrypted_file)
+
+            backup_entries.append({
+                'record_id': record_id,
+                'ipfs_hash': ipfs_hash,
+                'file_name': file_name,
+                'title': record[2],
+                'owner': record[3]
+            })
+
+        return jsonify({'message': 'Backup completed successfully.', 'backup_entries': backup_entries}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
