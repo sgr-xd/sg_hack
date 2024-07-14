@@ -5,6 +5,7 @@ import Home from "./components/Home";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
+import FileList from "./components/FileList";
 import UploadDocument from "./components/UploadDocument";
 import RetrieveDocument from "./components/RetrieveDocument";
 import AllDocuments from "./components/AllDocuments";
@@ -24,6 +25,7 @@ const App = () => {
           <Route path="/upload" element={<UploadDocument />} />
           <Route path="/retrieve" element={<RetrieveDocument />} />
           <Route path="/all-documents" element={<AllDocuments />} />
+          <Route path="/file-list" element={<FileList/>} />
           <Route path="/admin" element={<AdminPanel />} />
         </Routes>
       </div>

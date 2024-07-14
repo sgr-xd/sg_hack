@@ -33,19 +33,6 @@ const Dashboard = () => {
       alert("Logout failed: " + (error.response?.data?.error || error.message));
     }
   };
-  const handleImportGCP = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/upload_from_gcs", {
-        withCredentials: true,
-        responseType: "blob", // Important for downloading files
-      });
-  }catch (error) {
-    alert(
-      "Failed to fetch records: " +
-        (error.response?.data?.error || error.message)
-    );
-  }
-};
   const handleGenerateLog = async () => {
     try {
       const response = await axios.get("http://localhost:5000/generate_log", {
@@ -112,7 +99,7 @@ const Dashboard = () => {
         </Link>
         )}
         {userType === "Admin" && (
-          <Link to="#" className="card generate-log" onClick={handleImportGCP}>
+          <Link to="/file-list" className="card generate-log" state={{ userType: userType }}>
           Import From Legal Database
         </Link>
         )}

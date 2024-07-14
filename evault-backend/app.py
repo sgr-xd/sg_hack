@@ -365,26 +365,42 @@ def upload_to_gcs(record_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/list_files', methods=['GET'])
+def list_files():
+    try:
+        bucket = storage_client.get_bucket(bucket_name)
+        blobs = bucket.list_blobs()
+        file_names = [blob.name for blob in blobs]
+
+        return jsonify({'files': file_names}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/upload_from_gcs', methods=['POST'])
 def upload_from_gcs():
+    global user_role
+    global user_name
     try:
-        if  'title' not in request.form or 'role' not in request.form:
+        if 'file_name' not in request.form or 'title' not in request.form:
             return jsonify({'error': 'File name, title, and role are required'}), 400
 
-        file_name = 'resume-2.pdf'
+        file_name = request.form['file_name']
         title = request.form['title']
-        role = request.form['role']
+        role = user_role
 
-        try:
-            bucket = storage_client.get_bucket(bucket_name)
-            blob = bucket.blob(file_name)
-            file_data = blob.download_as_bytes()
-        except Exception as e:
-            print(f"Error accessing GCS: {e}")
-            return jsonify({'error': str(e)}), 500
+        # Retrieve file from Google Cloud Storage
+        bucket = storage_client.get_bucket(bucket_name)
+        blob = bucket.blob(file_name)
+        file_data = blob.download_as_bytes()
 
+        user = user_collection.find_one({'username': user_name})
+        cipher_key=user['cipher_key']
+        print(cipher_key)
+        cipher = Fernet(cipher_key)
+        encrypted_file = cipher.encrypt(file_data)
+        
         # Upload file to IPFS
-        files = {'file': file_data}
+        files = {'file': encrypted_file}
         response = requests.post(f'{ipfs_api_url}/add', files=files)
         response.raise_for_status()
         ipfs_hash = response.json()['Hash']
@@ -394,6 +410,7 @@ def upload_from_gcs():
         return jsonify({'tx_hash': tx_hash.hex(), 'ipfs_hash': ipfs_hash}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 #Backup
 @app.route('/backup', methods=['POST'])
