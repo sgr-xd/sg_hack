@@ -89,3 +89,23 @@ Enforces permissions via blockchain for transparency and security.
 3. Fetch document from IPFS.
 
 ### Document Backup
+
+1. Admin triggers backup.
+2. Backend retrieves documents from IPFS.
+3. Upload to GCP.
+4. Log completion.
+
+## Deployment
+
+1. Deploy smart contracts with Truffle.
+2. Set up Flask backend.
+3. Run IPFS node.
+4. Configure GCP bucket.
+5. Host frontend.
+
+## Future Enhancements
+
+- Multi-factor authentication for Admins.
+- Scalable microservices architecture with Kubernetes.
+
+For detailed setup and usage, refer to the full documentation.
