@@ -15,7 +15,7 @@ from flask_session import Session
 from google.cloud import storage
 
 bucket_name = 'sg-hk-files'
-service_account_key_path = 'upheld-castle-429321-c2-f44b1b00aff8.json'
+service_account_key_path = ''
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = service_account_key_path
 storage_client = storage.Client()
 app = Flask(__name__)
