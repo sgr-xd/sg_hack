@@ -10,6 +10,8 @@ import UploadDocument from "./components/UploadDocument";
 import RetrieveDocument from "./components/RetrieveDocument";
 import AllDocuments from "./components/AllDocuments";
 import AdminPanel from "./components/AdminPanel";
+import AdminDocuments from "./components/AdminDocuments";
+import UserDocuments from "./components/UserDocuments";
 import "./App.css";
 
 const App = () => {
@@ -25,6 +27,8 @@ const App = () => {
           <Route path="/upload" element={<UploadDocument />} />
           <Route path="/retrieve" element={<RetrieveDocument />} />
           <Route path="/all-documents" element={<AllDocuments />} />
+          <Route path="/admin-documents" element={<AdminDocuments />} />
+          <Route path="/user-documents" element={<UserDocuments />} />
           <Route path="/file-list" element={<FileList/>} />
           <Route path="/admin" element={<AdminPanel />} />
         </Routes>

@@ -69,11 +69,11 @@ const Dashboard = () => {
     } catch (error) {
       alert(
         "Failed to fetch records: " +
-        (error.response?.data?.error || error.message)
+          (error.response?.data?.error || error.message)
       );
     }
   };
-  
+
   return (
     <div className="dashboard">
       <button className="logout-button" onClick={handleLogout}>
@@ -87,23 +87,38 @@ const Dashboard = () => {
         <Link to="/retrieve" className="card">
           Retrieve Document
         </Link>
-        <Link className="card" to="/all-documents" state={{ userType: userType }}>All Documents</Link>
-        {userType === "Admin" && (
-          <Link to="#" className="card generate-log" onClick={handleGenerateLog}>
-          Generate Log
+        {/* <Link className="card" to="/all-documents" state={{ userType: userType }}>All Documents</Link> */}
+        <Link
+          className="card"
+          to={userType === "Admin" ? "/admin-documents" : "/user-documents"}
+          state={{ userType: userType }}
+        >
+          All Documents
         </Link>
+        {userType === "Admin" && (
+          <Link
+            to="#"
+            className="card generate-log"
+            onClick={handleGenerateLog}
+          >
+            Generate Log
+          </Link>
         )}
         {userType === "Admin" && (
           <Link to="#" className="card generate-log" onClick={handleBackup}>
-          Backup
-        </Link>
+            Backup
+          </Link>
         )}
         {userType === "Admin" && (
-          <Link to="/file-list" className="card generate-log" state={{ userType: userType }}>
-          Import From Legal Database
-        </Link>
+          <Link
+            to="/file-list"
+            className="card generate-log"
+            state={{ userType: userType }}
+          >
+            Import From Legal Database
+          </Link>
         )}
-        
+
         {userType === "Admin" && (
           <Link to="/admin" className="card">
             List Users
