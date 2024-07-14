@@ -23056,12 +23056,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x5C0cD2aD933b1e6958387bF4575D2E2603F4B060",
-      "transactionHash": "0x25d62f310ed6277696c407a37069b637127d191cb202d155578f060b128f4ddd"
+      "address": "0xfC3aCd807839388ad4dAa3a1C25FD02c776C1e58",
+      "transactionHash": "0x380fe4cc94379fcd09759ae494200bda9adf364583f0b28ac6d1665d7ad755e0"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-07-14T04:33:15.326Z",
+  "updatedAt": "2024-07-14T06:12:36.220Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

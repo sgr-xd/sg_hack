@@ -12,7 +12,12 @@ from pymongo import MongoClient
 from pymongo.errors import ConfigurationError
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_session import Session
+from google.cloud import storage
 
+bucket_name = 'sg-hk-files'
+service_account_key_path = 'upheld-castle-429321-c2-f44b1b00aff8.json'
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = service_account_key_path
+storage_client = storage.Client()
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
@@ -298,6 +303,75 @@ def generate_log():
 
         return send_file(log_file_path, as_attachment=True)
     
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+#GCP apis
+@app.route('/upload_to_gcs', methods=['POST'])
+def upload_to_gcs():
+    global user_role
+    try:
+        if 'record_id' not in request.form:
+            return jsonify({'error': 'Record ID is required'}), 400
+
+        record_id = int(request.form['record_id'])
+        role = "Admin"
+
+        if role is None:
+            return jsonify({'error': 'User role is not set'}), 400
+
+        print(f"Record ID: {record_id}, Role: {role}")  # Debugging line
+
+        # Fetch the record from the blockchain
+        record = contract.functions.getRecord(role, record_id).call()
+        ipfs_hash = record[1]
+
+        # Fetch file data from IPFS
+        response = requests.post(f'{ipfs_api_url}/cat?arg={ipfs_hash}')
+        response.raise_for_status()
+        file_data = response.content
+
+        # Create a file name based on the IPFS hash
+        file_name = f'{ipfs_hash}.bin'
+
+        # Upload file to Google Cloud Storage
+        bucket = storage_client.get_bucket(bucket_name)
+        blob = bucket.blob(file_name)
+        blob.upload_from_string(file_data)
+
+        return jsonify({'message': f'File {file_name} uploaded to GCS successfully.'}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/upload_from_gcs', methods=['POST'])
+def upload_from_gcs():
+    try:
+        if  'title' not in request.form or 'role' not in request.form:
+            return jsonify({'error': 'File name, title, and role are required'}), 400
+
+        file_name = 'resume-2.pdf'
+        title = request.form['title']
+        role = request.form['role']
+
+        try:
+            bucket = storage_client.get_bucket(bucket_name)
+            blob = bucket.blob(file_name)
+            file_data = blob.download_as_bytes()
+        except Exception as e:
+            print(f"Error accessing GCS: {e}")
+            return jsonify({'error': str(e)}), 500
+
+        # Upload file to IPFS
+        files = {'file': file_data}
+        response = requests.post(f'{ipfs_api_url}/add', files=files)
+        response.raise_for_status()
+        ipfs_hash = response.json()['Hash']
+
+        # Call smart contract function to store the IPFS hash
+        tx_hash = contract.functions.createRecord(role, ipfs_hash, title).transact({'from': web3.eth.accounts[0], 'gas': 2000000})
+        return jsonify({'tx_hash': tx_hash.hex(), 'ipfs_hash': ipfs_hash}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

@@ -64,7 +64,6 @@ a {
     position: relative;
     overflow: hidden;
     cursor: pointer;
-    flex: 0 1 calc(33.33% - 200px); /* Allows three cards per row */
     max-width: 250px; /* Optional: Prevents cards from stretching */
 }
 
