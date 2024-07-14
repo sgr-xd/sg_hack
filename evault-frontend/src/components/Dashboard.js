@@ -26,12 +26,14 @@ const Dashboard = () => {
         { withCredentials: true }
       );
       if (response.status === 200) {
+        setUserType("User"); // Reset userType to default
         navigate("/login");
       }
     } catch (error) {
       alert("Logout failed: " + (error.response?.data?.error || error.message));
     }
   };
+
   const handleGenerateLog = async () => {
     try {
       const response = await axios.get("http://localhost:5000/generate_log", {
@@ -70,9 +72,7 @@ const Dashboard = () => {
         <Link to="/retrieve" className="card">
           Retrieve Document
         </Link>
-        <Link to="/all-documents" className="card">
-          All Documents
-        </Link>
+        <Link className="card" to="/all-documents" state={{ userType: userType }}>All Documents</Link>
         {userType === "Admin" && (
           <div className="card" onClick={handleGenerateLog}>
             Generate Log

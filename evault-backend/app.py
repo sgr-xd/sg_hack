@@ -196,7 +196,7 @@ def get_record_ids():
             return jsonify({'error': 'User not found'}), 404
 
         # Retrieve the record array
-        record_ids = user.get('record', [])
+        record_ids = user.get('records', [])
         return jsonify({'record_ids': record_ids}), 200
 
     except Exception as e:
@@ -227,7 +227,7 @@ def register():
         'password': hashed_password,
         'user_type': user_type,
         'cipher_key': cipher_key,
-        'record': []
+        'records': []
     }
 
     user_collection.insert_one(new_user)

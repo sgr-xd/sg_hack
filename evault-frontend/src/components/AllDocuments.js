@@ -1,13 +1,49 @@
-// src/components/AllDocuments.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const AllDocuments = () => {
   const [records, setRecords] = useState([]);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [userType, setUserType] = useState("User");
+
+  useEffect(() => {
+    if (location.state && location.state.userType) {
+      setUserType(location.state.userType);
+    } else {
+      const storedUserType = localStorage.getItem('userType');
+      if (storedUserType) {
+        setUserType(storedUserType);
+      } else {
+        alert("User type not found. Please log in again.");
+        navigate("/login");
+      }
+    }
+  }, [location.state, navigate]);
 
   const fetchRecords = async () => {
-    const response = await axios.get("http://127.0.0.1:5000/get_all_records");
-    setRecords(response.data);
+    try {
+      if (userType === "Admin") {
+        const response = await axios.get("http://127.0.0.1:5000/get_all_records");
+        console.log("Admin records response:", response.data);
+        setRecords(response.data);
+      } else {
+        const response = await axios.get("http://127.0.0.1:5000/get_recordIds");
+        const recordIds = response.data.record_ids || response.data;
+  
+        const recordDetailsPromises = recordIds.map(async (id) => {
+          const recordResponse = await axios.get(`http://localhost:5000/get_record/${id}`);
+          return recordResponse.data;
+        });
+  
+        const detailedRecords = await Promise.all(recordDetailsPromises);
+        setRecords(detailedRecords);
+      }
+    } catch (error) {
+      console.error('Failed to fetch records:', error);
+      alert('Failed to fetch records: ' + (error.response?.data?.error || error.message));
+    }
   };
 
   const downloadDocument = async (recordId) => {
@@ -29,9 +65,9 @@ const AllDocuments = () => {
       console.error("Error downloading the document:", error);
     }
   };
+
   const deleteDocument = async (recordId) => {
     try {
-      console.log(recordId);
       await axios.post(`http://localhost:5000/delete/${recordId}`);
       fetchRecords(); // Refresh the list after deletion
     } catch (error) {
@@ -40,8 +76,10 @@ const AllDocuments = () => {
   };
 
   useEffect(() => {
-    fetchRecords();
-  }, []);
+    if (userType) {
+      fetchRecords();
+    }
+  }, [userType]);
 
   return (
     <div>

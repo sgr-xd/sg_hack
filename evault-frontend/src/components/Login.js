@@ -10,19 +10,21 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://127.0.0.1:5000/login', {
-                username,
-                password,
-            }, { withCredentials: true });
-    
-            if (response.status === 200) {
-                navigate('/dashboard', { state: { userType: response.data.user_type } });
-            }
+          const response = await axios.post('http://127.0.0.1:5000/login', {
+            username,
+            password,
+          }, { withCredentials: true });
+      
+          if (response.status === 200) {
+            const userType = response.data.user_type;
+            localStorage.setItem('userType', userType);
+            navigate('/dashboard', { state: { userType } });
+          }
         } catch (error) {
-            console.error('Login error:', error);
-            alert('Login failed: ' + (error.response?.data?.error || error.message));
+          console.error('Login error:', error);
+          alert('Login failed: ' + (error.response?.data?.error || error.message));
         }
-    };
+      };
     
 
     return (
