@@ -30,7 +30,8 @@ const AllDocuments = () => {
         setRecords(response.data);
       } else {
         const response = await axios.get("http://127.0.0.1:5000/get_recordIds");
-        const recordIds = response.data.record_ids || response.data;
+        console.log("NON-Admin records response:", response.data);
+        const recordIds = response.data.record_ids;
   
         const recordDetailsPromises = recordIds.map(async (id) => {
           const recordResponse = await axios.get(`http://localhost:5000/get_record/${id}`);

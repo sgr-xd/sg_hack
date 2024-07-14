@@ -74,9 +74,9 @@ const Dashboard = () => {
         </Link>
         <Link className="card" to="/all-documents" state={{ userType: userType }}>All Documents</Link>
         {userType === "Admin" && (
-          <div className="card" onClick={handleGenerateLog}>
-            Generate Log
-          </div>
+          <Link to="#" className="card generate-log" onClick={handleGenerateLog}>
+          Generate Log
+        </Link>
         )}
         {userType === "Admin" && (
           <Link to="/admin" className="card">

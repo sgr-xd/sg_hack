@@ -1,30 +1,41 @@
+/* Dashboard.css */
+
 .dashboard {
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 20px;
     position: relative;
+    background-color: #f4f7fa;
+    min-height: 100vh;
 }
-
+a {
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.6);
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    font-size: 20px;
+  }
+  
 .logout-button {
     position: absolute;
     top: 10px;
     right: 10px;
-    background-color: #000;
+    background-color: #000000;
     color: #fff;
     border: none;
-    padding: 5px 10px;
+    padding: 8px 15px;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 16px;
     transition: background-color 0.3s ease;
     text-align: center;
-    width: 80px;
-    height: 30px;
+    width: 100px;
 }
 
 .logout-button:hover {
-    background-color: #c82333;
+    background-color: #e5565d;;
 }
 
 .cards {
@@ -36,27 +47,54 @@
 }
 
 .card {
-    background-color: #f8f9fa;
+    background-color: #ffffff;
     border: 1px solid #ddd;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 250px;
-    height: 150px;
+    width: 250px; /* Fixed width */
+    height: 150px; /* Consistent height */
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     color: #000;
     text-decoration: none;
     font-weight: bold;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    flex: 0 1 calc(33.33% - 200px); /* Allows three cards per row */
+    max-width: 250px; /* Optional: Prevents cards from stretching */
 }
 
+
+
+.card.generate-log {
+    height: 150px; /* Ensure consistent height */
+}
 
 
 .card:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    background-color: #4A90E2;
+    background-color: #e5565d;
     color: #fff;
+}
+
+.card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    transition: opacity 0.3s;
+    opacity: 0;
+}
+
+.card:hover::after {
+    opacity: 1;
 }

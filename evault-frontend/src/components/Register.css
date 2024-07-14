@@ -1,0 +1,125 @@
+/* Colors */
+:root {
+  --green-seaweed: rgba(2, 128, 144, 1);
+  --blue-queen: rgba(69, 105, 144, 1);
+  --red-fire: rgba(244, 91, 105, 1);
+  --font-asap: "Asap", sans-serif;
+}
+
+h1 {
+  text-align: center;
+  color: rgb(0, 0, 0);
+  margin-bottom: 20px;
+}
+
+h2 {
+  color: rgba(244, 91, 105, 1);
+  font-size: 24px;
+  text-align: center;
+}
+.register {
+  overflow: hidden;
+  background-color: white;
+  padding: 40px 30px 30px 30px;
+  border-radius: 10px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 400px;
+  transform: translate(-50%, -50%);
+  transition: transform 300ms, box-shadow 300ms;
+  box-shadow: 5px 10px 10px rgba(2, 128, 144, 0.2);
+}
+
+.register::before,
+.register::after {
+  content: "";
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-top-left-radius: 40%;
+  border-top-right-radius: 45%;
+  border-bottom-left-radius: 35%;
+  border-bottom-right-radius: 40%;
+  z-index: -1;
+}
+
+.register::before {
+  left: 40%;
+  bottom: -130%;
+  /* background-color: rgba(69, 105, 144, 0.15); */
+  background-color: #e57f84;
+  animation: wawes 6s infinite linear;
+}
+
+.register::after {
+  left: 35%;
+  bottom: -135%;
+  /* background-color: rgba(2, 128, 144, 0.2); */
+  background-color: #e5565d;
+  animation: wawes 7s infinite;
+}
+
+.register > input {
+  font-family: var(--font-asap);
+  display: block;
+  border-radius: 5px;
+  font-size: 16px;
+  background: white;
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  padding: 10px 10px;
+  margin: 15px -10px;
+}
+
+.register > select {
+  font-family: var(--font-asap);
+  display: block;
+  border-radius: 5px;
+  font-size: 16px;
+  background: white;
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  padding: 10px 10px;
+  margin: 15px -10px;
+  /* appearance: none; Remove default arrow */
+  position: relative;
+}
+
+.register > button {
+  font-family: var(--font-asap);
+  cursor: pointer;
+  color: #fff;
+  font-size: 16px;
+  text-transform: uppercase;
+  width: 100px;
+  border: 0;
+  padding: 10px 0;
+  margin-top: 10px;
+  margin-left: -5px;
+  border-radius: 5px;
+  background-color: var(--red-fire);
+  transition: background-color 300ms;
+}
+
+.register > button:hover {
+  background-color: #cf3e46;
+}
+
+@keyframes wawes {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+a {
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.6);
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  font-size: 12px;
+}
